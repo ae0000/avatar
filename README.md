@@ -7,10 +7,20 @@ Example
 -------
 
 ```
-avatar.ToDisk("AE", "../out.png")
+package main
 
-// Which is the same as
-avatar.ToDisk("Andrew Edwards", "../out.png")
+import (
+	"github.com/ae0000/avatar"
+)
+
+func main() {
+	avatar.ToDisk("AE", "../ae.png")
+
+    // Which is the same as
+    avatar.ToDisk("Andrew Edwards", "../ae.png")
+}
+
+
 ```
 [![Example](https://raw.githubusercontent.com/ae0000/avatar/master/ae.png)](https://raw.githubusercontent.com/ae0000/avatar/master/ae.png)
 
