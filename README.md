@@ -1,7 +1,9 @@
 A V A T A R
 ===========
 
-Create avatars based on names.
+Create avatars based on names. The colors are chosen based on the first
+character. You can save to disk ```ToDisk``` or send back over HTTP 
+```ToHTTP```.
 
 Example
 -------
@@ -31,3 +33,11 @@ You can pass in a single character as well
 avatar.ToDisk("Jet", "../j.png")
 ```
 [![Example](https://raw.githubusercontent.com/ae0000/avatar/master/j.png)](https://raw.githubusercontent.com/ae0000/avatar/master/j.png)
+
+TODO
+----
+
+- [x] HTTP example
+- [ ] Caching
+- [ ] Custom colors
+- [ ] Add unique colors that are missing (T-Z,0-9)
