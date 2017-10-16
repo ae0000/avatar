@@ -40,7 +40,6 @@ func init() {
 	if !ok {
 		panic("No caller information")
 	}
-	fmt.Println(filename)
 	sourceDir = path.Dir(filename)
 }
 
