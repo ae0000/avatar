@@ -5,5 +5,5 @@ import (
 )
 
 func main() {
-	avatar.ToDisk("AE", "../out.png")
+	avatar.ToDisk("AE", "../ae.png")
 }
