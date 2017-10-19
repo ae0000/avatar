@@ -15,6 +15,7 @@ import (
 	"runtime"
 	"strconv"
 	"strings"
+	"sync"
 
 	"github.com/golang/freetype"
 	"github.com/golang/freetype/truetype"
@@ -124,9 +125,35 @@ func getFont(fontFaceName string) (*truetype.Font, error) {
 	return freetype.ParseFont(fontBytes)
 }
 
+var imageCache sync.Map
+
+func getImage(initials string) *image.RGBA {
+	value, ok := imageCache.Load(initials)
+
+	if !ok {
+		return nil
+	}
+
+	image, ok2 := value.(*image.RGBA)
+	if !ok2 {
+		return nil
+	}
+	return image
+}
+
+func setImage(initials string, image *image.RGBA) {
+	imageCache.Store(initials, image)
+}
+
 func createAvatar(initials string) (*image.RGBA, error) {
 	// Make sure the string is OK
 	text := cleanString(initials)
+
+	// Check cache
+	cachedImage := getImage(text)
+	if cachedImage != nil {
+		return cachedImage, nil
+	}
 
 	// Load and get the font
 	f, err := getFont(fontFace)
@@ -184,6 +211,9 @@ func createAvatar(initials string) (*image.RGBA, error) {
 		pt := freetype.Pt(xPoints[i], textY)
 		c.DrawString(string(char), pt)
 	}
+
+	// Cache it
+	setImage(text, rgba)
 
 	return rgba, nil
 }

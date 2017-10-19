@@ -71,6 +71,6 @@ TODO
 ----
 
 - [x] HTTP example
-- [ ] Caching
+- [x] Caching
 - [ ] Custom colors
 - [ ] Add unique colors that are missing (T-Z,0-9)
