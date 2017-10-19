@@ -23,13 +23,13 @@ import (
 
 const (
 	fontFace    = "Roboto-Bold.ttf" //SourceSansVariable-Roman.ttf"
-	fontSize    = 275.0
+	fontSize    = 210.0
 	imageWidth  = 500.0
 	imageHeight = 500.0
 	lineSpacing = 1
 	dpi         = 72.0
 	spacer      = 20
-	textY       = 340
+	textY       = 320
 )
 
 var sourceDir string
