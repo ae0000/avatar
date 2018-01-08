@@ -3,7 +3,6 @@ package avatar
 import (
 	"bufio"
 	"bytes"
-	"fmt"
 	"image"
 	"image/draw"
 	"image/png"
@@ -11,8 +10,6 @@ import (
 	"log"
 	"net/http"
 	"os"
-	"path"
-	"runtime"
 	"strconv"
 	"strings"
 	"sync"
@@ -23,26 +20,33 @@ import (
 )
 
 const (
-	fontFace    = "Roboto-Bold.ttf" //SourceSansVariable-Roman.ttf"
-	fontSize    = 210.0
-	imageWidth  = 500.0
-	imageHeight = 500.0
-	lineSpacing = 1
-	dpi         = 72.0
-	spacer      = 20
-	textY       = 320
+	defaultfontFace = "Roboto-Bold.ttf" //SourceSansVariable-Roman.ttf"
+	fontSize        = 210.0
+	imageWidth      = 500.0
+	imageHeight     = 500.0
+	lineSpacing     = 1
+	dpi             = 72.0
+	spacer          = 20
+	textY           = 320
 )
 
-var sourceDir string
+var fontFacePath = ""
 
-func init() {
-	// We need to set the source directory for the font
-	_, filename, _, ok := runtime.Caller(0)
-	if !ok {
-		panic("No caller information")
-	}
-	sourceDir = path.Dir(filename)
+// SetFontFacePath sets the font to do the business with
+func SetFontFacePath(f string) {
+	fontFacePath = f
 }
+
+// var sourceDir string
+
+// func init() {
+// 	// We need to set the source directory for the font
+// 	_, filename, _, ok := runtime.Caller(0)
+// 	if !ok {
+// 		panic("No caller information")
+// 	}
+// 	sourceDir = path.Dir(filename)
+// }
 
 // ToDisk saves the image to disk
 func ToDisk(initials, path string) {
@@ -115,9 +119,12 @@ func cleanString(incoming string) string {
 	return strings.ToUpper(strings.TrimSpace(incoming))
 }
 
-func getFont(fontFaceName string) (*truetype.Font, error) {
+func getFont(fontPath string) (*truetype.Font, error) {
+	if fontPath == "" {
+		fontPath = defaultfontFace
+	}
 	// Read the font data.
-	fontBytes, err := ioutil.ReadFile(fmt.Sprintf("%s/%s", sourceDir, fontFaceName))
+	fontBytes, err := ioutil.ReadFile(fontPath) //fmt.Sprintf("%s/%s", sourceDir, fontFaceName))
 	if err != nil {
 		return nil, err
 	}
@@ -156,7 +163,7 @@ func createAvatar(initials string) (*image.RGBA, error) {
 	}
 
 	// Load and get the font
-	f, err := getFont(fontFace)
+	f, err := getFont(fontFacePath)
 	if err != nil {
 		return nil, err
 	}
