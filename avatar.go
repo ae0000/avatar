@@ -12,6 +12,7 @@ import (
 	"net/http"
 	"os"
 	"path"
+	"path/filepath"
 	"runtime"
 	"strconv"
 	"strings"
@@ -27,15 +28,21 @@ const (
 	fontSize    = 210.0
 	imageWidth  = 500.0
 	imageHeight = 500.0
-	lineSpacing = 1
 	dpi         = 72.0
 	spacer      = 20
 	textY       = 320
+	// lineSpacing = 1
 )
 
 var sourceDir string
 
 func init() {
+	ex, err := os.Executable()
+	if err != nil {
+		panic(err)
+	}
+	exPath := filepath.Dir(ex)
+	fmt.Println(exPath)
 	// We need to set the source directory for the font
 	_, filename, _, ok := runtime.Caller(0)
 	if !ok {
@@ -84,6 +91,7 @@ func ToHTTP(initials string, w http.ResponseWriter) {
 	}
 
 	b := new(bytes.Buffer)
+	key := fmt.Sprintf("avatar%s", initials) // for Etag
 
 	err = png.Encode(b, rgba)
 	if err != nil {
@@ -92,6 +100,9 @@ func ToHTTP(initials string, w http.ResponseWriter) {
 
 	w.Header().Set("Content-Type", "image/png")
 	w.Header().Set("Content-Length", strconv.Itoa(len(b.Bytes())))
+	w.Header().Set("Cache-Control", "max-age=2592000") // 30 days
+	w.Header().Set("Etag", `"`+key+`"`)
+
 	if _, err := w.Write(b.Bytes()); err != nil {
 		log.Println("unable to write image.")
 	}
