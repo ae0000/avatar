@@ -30,7 +30,7 @@ func TestGetFont(t *testing.T) {
 	if f != nil {
 		t.Error("should not have been able to return a font")
 	}
-	f, err = getFont(fontFace)
+	f, err = getFont(defaultfontFace)
 	if err != nil {
 		t.Error("should of been able to return a font", err)
 	}
