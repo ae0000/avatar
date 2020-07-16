@@ -96,7 +96,7 @@ func ToHTTP(initials string, w http.ResponseWriter) {
 
 // ToHTTPCustom sends the image to a http.ResponseWriter (as a PNG)
 func ToHTTPCustom(initials, bgColor, fontColor string, w http.ResponseWriter) {
-	saveToHTTP(initials, "", "", w)
+	saveToHTTP(initials, bgColor, fontColor, w)
 }
 
 // saveToHTTP sends the image to a http.ResponseWriter (as a PNG)
