@@ -50,7 +50,17 @@ func SetFontFacePath(f string) {
 
 // ToDisk saves the image to disk
 func ToDisk(initials, path string) {
-	rgba, err := createAvatar(initials)
+	saveToDisk(initials, path, "", "")
+}
+
+// ToDiskCustom saves the image to disk
+func ToDiskCustom(initials, path, bgColor, fontColor string) {
+	saveToDisk(initials, path, bgColor, fontColor)
+}
+
+// saveToDisk saves the image to disk
+func saveToDisk(initials, path, bgColor, fontColor string) {
+	rgba, err := createAvatar(initials, bgColor, fontColor)
 	if err != nil {
 		log.Println(err)
 		return
@@ -81,7 +91,17 @@ func ToDisk(initials, path string) {
 
 // ToHTTP sends the image to a http.ResponseWriter (as a PNG)
 func ToHTTP(initials string, w http.ResponseWriter) {
-	rgba, err := createAvatar(initials)
+	saveToHTTP(initials, "", "", w)
+}
+
+// ToHTTPCustom sends the image to a http.ResponseWriter (as a PNG)
+func ToHTTPCustom(initials, bgColor, fontColor string, w http.ResponseWriter) {
+	saveToHTTP(initials, "", "", w)
+}
+
+// saveToHTTP sends the image to a http.ResponseWriter (as a PNG)
+func saveToHTTP(initials, bgColor, fontColor string, w http.ResponseWriter) {
+	rgba, err := createAvatar(initials, bgColor, fontColor)
 	if err != nil {
 		log.Println(err)
 		return
@@ -156,7 +176,7 @@ func setImage(initials string, image *image.RGBA) {
 	imageCache.Store(initials, image)
 }
 
-func createAvatar(initials string) (*image.RGBA, error) {
+func createAvatar(initials, bgColor, fontColor string) (*image.RGBA, error) {
 	// Make sure the string is OK
 	text := cleanString(initials)
 
@@ -174,7 +194,20 @@ func createAvatar(initials string) (*image.RGBA, error) {
 
 	// Setup the colors, text white, background based on first initial
 	textColor := image.White
+	if fontColor != "" {
+		c, err := parseHexColorFast(fontColor)
+		if err == nil {
+			textColor = &image.Uniform{c}
+		}
+	}
 	background := defaultColor(text[0:1])
+	if bgColor != "" {
+		c, err := parseHexColorFast(bgColor)
+		if err == nil {
+			background = image.Uniform{c}
+		}
+	}
+
 	rgba := image.NewRGBA(image.Rect(0, 0, imageWidth, imageHeight))
 	draw.Draw(rgba, rgba.Bounds(), &background, image.ZP, draw.Src)
 	c := freetype.NewContext()
