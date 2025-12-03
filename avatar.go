@@ -1,3 +1,5 @@
+// Package avatar generates colorful avatar images from initials.
+// It creates 500x500px PNG images with customizable colors and built-in caching.
 package avatar
 
 import (
@@ -7,8 +9,6 @@ import (
 	"image"
 	"image/draw"
 	"image/png"
-	"io/ioutil"
-	"log"
 	"net/http"
 	"os"
 	"strconv"
@@ -32,45 +32,38 @@ const (
 
 var fontFacePath = ""
 
-// SetFontFacePath sets the font to do the business with
+// SetFontFacePath sets the path to the TrueType font file to use for rendering avatar text.
+// If not set, the default font "Roboto-Bold.ttf" will be used.
 func SetFontFacePath(f string) {
 	fontFacePath = f
 }
 
-// var sourceDir string
-
-// func init() {
-// 	// We need to set the source directory for the font
-// 	_, filename, _, ok := runtime.Caller(0)
-// 	if !ok {
-// 		panic("No caller information")
-// 	}
-// 	sourceDir = path.Dir(filename)
-// }
-
-// ToDisk saves the image to disk
-func ToDisk(initials, path string) {
-	saveToDisk(initials, path, "", "")
+// ToDisk generates an avatar image from the given initials and saves it as a PNG file
+// at the specified path. The initials can be a full name (e.g., "John Doe" becomes "JD")
+// or explicit initials (e.g., "AE"). Colors are automatically assigned based on the first character.
+// Returns an error if avatar generation or file writing fails.
+func ToDisk(initials, path string) error {
+	return saveToDisk(initials, path, "", "")
 }
 
-// ToDiskCustom saves the image to disk
-func ToDiskCustom(initials, path, bgColor, fontColor string) {
-	saveToDisk(initials, path, bgColor, fontColor)
+// ToDiskCustom generates an avatar image with custom colors and saves it as a PNG file.
+// The bgColor and fontColor parameters should be hex color strings (e.g., "#FF0000").
+// Empty strings use default colors. Returns an error if avatar generation or file writing fails.
+func ToDiskCustom(initials, path, bgColor, fontColor string) error {
+	return saveToDisk(initials, path, bgColor, fontColor)
 }
 
 // saveToDisk saves the image to disk
-func saveToDisk(initials, path, bgColor, fontColor string) {
+func saveToDisk(initials, path, bgColor, fontColor string) error {
 	rgba, err := createAvatar(initials, bgColor, fontColor)
 	if err != nil {
-		log.Println(err)
-		return
+		return fmt.Errorf("create avatar: %w", err)
 	}
 
 	// Save image to disk
 	out, err := os.Create(path)
 	if err != nil {
-		log.Println(err)
-		os.Exit(1)
+		return fmt.Errorf("create file: %w", err)
 	}
 	defer out.Close()
 
@@ -78,41 +71,46 @@ func saveToDisk(initials, path, bgColor, fontColor string) {
 
 	err = png.Encode(b, rgba)
 	if err != nil {
-		log.Println(err)
-		os.Exit(1)
+		return fmt.Errorf("encode png: %w", err)
 	}
 
 	err = b.Flush()
 	if err != nil {
-		log.Println(err)
-		os.Exit(1)
+		return fmt.Errorf("flush buffer: %w", err)
 	}
+
+	return nil
 }
 
-// ToHTTP sends the image to a http.ResponseWriter (as a PNG)
-func ToHTTP(initials string, w http.ResponseWriter) {
-	saveToHTTP(initials, "", "", w)
+// ToHTTP generates an avatar image from the given initials and writes it as a PNG
+// to the provided http.ResponseWriter. Automatically sets appropriate headers including
+// Content-Type, Cache-Control (30 days), and ETag for browser caching.
+// Returns an error if avatar generation or writing fails.
+func ToHTTP(initials string, w http.ResponseWriter) error {
+	return saveToHTTP(initials, "", "", w)
 }
 
-// ToHTTPCustom sends the image to a http.ResponseWriter (as a PNG)
-func ToHTTPCustom(initials, bgColor, fontColor string, w http.ResponseWriter) {
-	saveToHTTP(initials, bgColor, fontColor, w)
+// ToHTTPCustom generates an avatar image with custom colors and writes it as a PNG
+// to the provided http.ResponseWriter. The bgColor and fontColor parameters should be
+// hex color strings (e.g., "#FF0000"). Empty strings use default colors.
+// Returns an error if avatar generation or writing fails.
+func ToHTTPCustom(initials, bgColor, fontColor string, w http.ResponseWriter) error {
+	return saveToHTTP(initials, bgColor, fontColor, w)
 }
 
 // saveToHTTP sends the image to a http.ResponseWriter (as a PNG)
-func saveToHTTP(initials, bgColor, fontColor string, w http.ResponseWriter) {
+func saveToHTTP(initials, bgColor, fontColor string, w http.ResponseWriter) error {
 	rgba, err := createAvatar(initials, bgColor, fontColor)
 	if err != nil {
-		log.Println(err)
-		return
+		return fmt.Errorf("create avatar: %w", err)
 	}
 
 	b := new(bytes.Buffer)
-	key := fmt.Sprintf("avatar%s", initials) // for Etag
+	key := fmt.Sprintf("avatar%s%s%s", initials, bgColor, fontColor) // for Etag
 
 	err = png.Encode(b, rgba)
 	if err != nil {
-		log.Println("unable to encode image.")
+		return fmt.Errorf("encode png: %w", err)
 	}
 
 	w.Header().Set("Content-Type", "image/png")
@@ -121,8 +119,10 @@ func saveToHTTP(initials, bgColor, fontColor string, w http.ResponseWriter) {
 	w.Header().Set("Etag", `"`+key+`"`)
 
 	if _, err := w.Write(b.Bytes()); err != nil {
-		log.Println("unable to write image.")
+		return fmt.Errorf("write image: %w", err)
 	}
+
+	return nil
 }
 
 func cleanString(incoming string) string {
@@ -148,7 +148,7 @@ func getFont(fontPath string) (*truetype.Font, error) {
 		fontPath = defaultfontFace
 	}
 	// Read the font data.
-	fontBytes, err := ioutil.ReadFile(fontPath) //fmt.Sprintf("%s/%s", sourceDir, fontFaceName))
+	fontBytes, err := os.ReadFile(fontPath)
 	if err != nil {
 		return nil, err
 	}

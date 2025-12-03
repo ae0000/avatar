@@ -18,7 +18,9 @@ func main() {
 	r.Get("/avatar/{initials}.png", func(w http.ResponseWriter, r *http.Request) {
 		initials := chi.URLParam(r, "initials")
 
-		avatar.ToHTTP(initials, w)
+		if err := avatar.ToHTTP(initials, w); err != nil {
+			http.Error(w, fmt.Sprintf("Failed to generate avatar: %v", err), http.StatusInternalServerError)
+		}
 	})
 
 	// Show a heap of avatars

@@ -70,7 +70,6 @@ func parseHexColorFast(s string) (c color.RGBA, err error) {
 	return
 }
 
-// TODO add some more colors
 func defaultColor(initial string) image.Uniform {
 	switch initial {
 	case "A", "0":
@@ -113,6 +112,18 @@ func defaultColor(initial string) image.Uniform {
 		return Navy
 	case "T":
 		return Gold
+	case "U":
+		return Red
+	case "V":
+		return Green
+	case "W":
+		return Blue
+	case "X":
+		return Orange
+	case "Y":
+		return Purple
+	case "Z":
+		return Cyan
 	default:
 		return Grey
 	}
